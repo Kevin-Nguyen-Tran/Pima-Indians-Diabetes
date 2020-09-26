@@ -22,7 +22,7 @@ diabetes_data <- as.tibble(data)
 
 # Units:
 # Pregnancies: number of times pregnant
-# glucose: in mg/dL
+# glucose: in mg/dL - based on the numbers, it seems that our values are of DBP (diastolic blood pressure)
 # blood pressure: in mm Hg
 # skinthickness: triceps skin fold in mm
 # Insulin: mu U/ml
@@ -57,14 +57,14 @@ diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
 # 1. PEARSON'S CORRELATION - HEAT MAP
 #=============================================================================================================================================================================================================================
 
-ggcorrplot(cor(diabetes_data), hc.order = TRUE, lab = TRUE, lab_size = 3)
+ggcorrplot(cor(data), hc.order = TRUE, lab = TRUE, lab_size = 3)
 # based on this correlation plot, we are more interested in how outcome fares with the other numeric variables.
 # Pregnancy, age, diabetes pedigree function, and insulin have a slightly positive correlation with outcome
 # Glucose and BMI have a strong positive correlation with Outcome.
 # Blood pressure and skin thickness does not appear to show either a positive or negative correlation with Outcome.
 # This will be our overhead analysis and we will now dive a bit deeper into each and see how it correlates and if it matches our linear regression model.
 
-cor(diabetes_data)
+cor(data)
 
 #=============================================================================================================================================================================================================================
 # 2. BLOOD PRESURE AND SKIN THICKNESS VS DIABETES
@@ -170,22 +170,59 @@ ggplot(probability_data, aes(x = rank, y = fitted.values, color = outcome)) +
 # Given a sample of the same variables, we can predict the likelihood of an individual having diabetes.
 
 #=============================================================================================================================================================================================================================
-# PCA's AND OTHER TYPES OF CORRELATION PLOTS???
+# GOOD PREDICTORS AND DIABETES
 #=============================================================================================================================================================================================================================
 
+# after, we can do deeper analysis for the good predictors as shown above in the linear regression model:
+# Pregnancy, glucose, bmi, diabetespedigree function, and bp**
 
+# BRAIN STORM MODES OF ANALYSIS:
+# density plots for each variables comparing those with and without diabetes
+# add details of normal ranges from online resources
 
+preg_dp <- ggplot(diabetes_data, aes(x = Pregnancies, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
 
+gluc_dp <- ggplot(diabetes_data, aes(x = Glucose, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
 
+bmi_dp <- ggplot(diabetes_data, aes(x = BMI, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
 
+dpf_dp <- ggplot(diabetes_data, aes(x = DiabetesPedigreeFunction, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
 
+bp_dp <- ggplot(diabetes_data, aes(x = BloodPressure, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
 
+multiplot(preg_dp, gluc_dp, bmi_dp, dpf_dp, bp_dp, cols = 2)
 
+# As we can see, non-diabetic patients will have a tall peak where the majority of patients will fall into that bin depending on the variables
+# for example: majority of non-diabetic patients will have 0-1 preganancies as shown by the tall peak!
+# majority of non-diabetic patients will have a glucose level of 100 as shown by the tall peak.
+# We notice that the strong predictors (those with small p-values) have a slightly shifted density plot (they do not overlap completely) or have a much wider density as seen in Pregnancies.
+# Variables with statistically significant variability (< 5%), but are not as strong predictors as the top 3) have overlapping density plots (with slight rightward shift) and similar wideness in density (slightly wider)
+# although diabetespedigreefunction and blood pressure are slightly different, it is still statistically significant as shown by our linear regression model
+# even if it is statistically significant, is it medically/scientifically significant?
 
+# pregnancy resources:
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6274679/
+# https://care.diabetesjournals.org/content/26/5/1646 ::for multiple pregnancies and findings for increase risk of diabetes
 
+# glucose resources:
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2797383/ ::there is a graph for criteria for the diagnosis of diabetes based on glucose levels in mg/dl or mmol/l
 
+# BMI resources:
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4457375/ ::BMIs for males and females
 
+# no resources on what diabetespedigreefunction is outside of this data set on kaggle. It seems to be specific to this data set and not used elsewhere
+# All we know is that it calculates the liklihood of diabetes onset depending on your family history
 
+# bp rersources:
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3942662/ ::has treatment bp and what it should be for diabetic pts
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4609903/ ::shows that treatment should start if bp is >140mmHg
+# it seems that our values are of diastolic blood pressure but the link above 4609903 has treatment for both SBP and DBP
+# but our values/averages are below that of treatment.
 
 
 
