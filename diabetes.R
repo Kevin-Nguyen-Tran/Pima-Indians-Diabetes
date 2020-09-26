@@ -22,8 +22,8 @@ diabetes_data <- as.tibble(data)
 
 # Units:
 # Pregnancies: number of times pregnant
-# glucose: in mg/dL - based on the numbers, it seems that our values are of DBP (diastolic blood pressure)
-# blood pressure: in mm Hg
+# glucose: in mg/dL 
+# blood pressure: in mm Hg - based on the numbers, it seems that our values are of DBP (diastolic blood pressure)
 # skinthickness: triceps skin fold in mm
 # Insulin: mu U/ml
 # BMI in kg/m^2^
@@ -57,7 +57,12 @@ diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
 # 1. PEARSON'S CORRELATION - HEAT MAP
 #=============================================================================================================================================================================================================================
 
-ggcorrplot(cor(data), hc.order = TRUE, lab = TRUE, lab_size = 3)
+ggcorrplot(cor(data), hc.order = TRUE, lab = TRUE, lab_size = 3) +
+  labs(title = "Correlation Between Variables and outcome",
+       subtitle = "Netural and Positive Correlation",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
 # based on this correlation plot, we are more interested in how outcome fares with the other numeric variables.
 # Pregnancy, age, diabetes pedigree function, and insulin have a slightly positive correlation with outcome
 # Glucose and BMI have a strong positive correlation with Outcome.
@@ -71,14 +76,34 @@ cor(data)
 #=============================================================================================================================================================================================================================
 
 ggplot(diabetes_data, aes(x = Outcome, y = BloodPressure)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest2", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Blood Pressure",
+       title = "No Statistically Significant Difference",
+       subtitle = "Between the Avg BP of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 
 t.test(diabetes_data$BloodPressure ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 # based on the t.test there is not a statistically significant difference between the average blood pressure of someone that is diabetic vs not diabetic.
 # zero is also in the confidence interval meaning that there is a chance of no difference (zero indicates no difference). 
 
 ggplot(diabetes_data, aes(x = Outcome, y = SkinThickness)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest2", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Tricep Skin Thickness",
+       title = "No Statistically Significant Difference",
+       subtitle = "Between the Avg Skin Thickness of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 
 t.test(diabetes_data$SkinThickness ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 # based on the t-test, there is not a statistically significant difference between the Skin Thickness of the tricep of a diabetic and non-diabetic
@@ -94,25 +119,65 @@ t.test(diabetes_data$SkinThickness ~ diabetes_data$Outcome, mu = 0, alt = "two.s
 diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
 
 ggplot(diabetes_data, aes(x = Outcome, y = Pregnancies)) +
-  geom_boxplot()
-# Showing a positive relation: diabetic patients have more preganancies on average than non-diabetic patients
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Number of Pregnancies",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg # of Pregnancies of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+# Showing a positive relation: diabetic patients have more pregnancies on average than non-diabetic patients
 t.test(diabetes_data$Pregnancies ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 
 ggplot(diabetes_data, aes(x = Outcome, y = Age)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Age",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg Age of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 # Showing a positive relation: diabetic patients are older on average than non-diabetic patients
 t.test(diabetes_data$Age ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 
 ggplot(diabetes_data, aes(x = Outcome, y = DiabetesPedigreeFunction)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Diabetes Pedigree Function Score",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg Diabetes Pedigree Frunction Score of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 # Showing a positive relation: diabetic patients have a higher diabetes pedigree function score on average than non-diabetic patients
 t.test(diabetes_data$DiabetesPedigreeFunction ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 
 ggplot(diabetes_data, aes(x = Outcome, y = Insulin)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Insulin (mu U/ml)",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg Insulin Level of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 # Showing a positive relation: diabetic patients have on average higher Insulin levels than non-diabetic
 t.test(diabetes_data$Insulin ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
@@ -126,12 +191,32 @@ t.test(diabetes_data$Insulin ~ diabetes_data$Outcome, mu = 0, alt = "two.sided",
 
 # Glucose and BMI have a strong positive correlation with Outcome.
 ggplot(diabetes_data, aes(x = Outcome, y = Glucose)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Glucose (mg/dL)",
+       title = "Strong Statistically Significant Difference",
+       subtitle = "Between the Avg Glucose Level of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 
 t.test(diabetes_data$Glucose ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 ggplot(diabetes_data, aes(x = Outcome, y = BMI)) +
-  geom_boxplot()
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "BMI (kg/m^2^)",
+       title = "Strong Statistically Significant Difference",
+       subtitle = "Between the Avg BMI of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
 
 t.test(diabetes_data$BMI ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
