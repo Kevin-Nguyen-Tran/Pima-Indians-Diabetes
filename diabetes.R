@@ -34,7 +34,8 @@ diabetes_data <- as.tibble(data)
 # Noticed that first 6 variables had 0. Which doesn't seem realistic. 0 BP, 0 BMI, 0 insulin and etc.
 
 # NEED TO TIDY DATA SET:
-glimpse(diabetes_data)
+summary(diabetes_data)
+str(diabetes_data)
 
 #it just seems that Outcome needs to be changed to a factor. All other variables are in correct class. **** IF YOU DO THIS, YOU CAN'T USE PEARSON'S CORRELATION, SINCE IT IS NOT NUMBERIC!
 
@@ -56,7 +57,7 @@ diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
 # 1. PEARSON'S CORRELATION - HEAT MAP
 #=============================================================================================================================================================================================================================
 
-ggcorrplot(cor(diabetes_data), hc.order = TRUE)
+ggcorrplot(cor(diabetes_data), hc.order = TRUE, lab = TRUE, lab_size = 3)
 # based on this correlation plot, we are more interested in how outcome fares with the other numeric variables.
 # Pregnancy, age, diabetes pedigree function, and insulin have a slightly positive correlation with outcome
 # Glucose and BMI have a strong positive correlation with Outcome.
@@ -141,6 +142,55 @@ t.test(diabetes_data$BMI ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", con
 #=============================================================================================================================================================================================================================
 # 5. LINEAR REGRESSION MODEL - BINOMIAL
 #=============================================================================================================================================================================================================================
+
+predicted <- glm(Outcome ~ ., family = "binomial", data = diabetes_data)
+summary(predicted)
+
+# As shown in the summary: Pregnancy, Glucose and BMI have the smallest p-value of all variables (as indicated by the three stars), indicating statistical significance.
+# Next, DiabetesPedigree function and Blood pressure show statistical significant but with slightly higher p-values.
+# Lastly, Age, Insulin, and Skin thickness all show large p-values (greater than 5%) which shows they are not good predictors of diabetes
+
+# Now we will plot the graph of our generalized linear model to see if it effectively captures the relationship. If so, closer to zero should represent no diabetes and closer to one should represent diabetes.
+
+probability_data <- data.frame(fitted.values = predicted$fitted.values, outcome = diabetes_data$Outcome)
+
+probability_data <- probability_data %>%
+  arrange(fitted.values)
+
+
+probability_data <- probability_data %>%
+  mutate(rank = 1:nrow(probability_data))
+
+ggplot(probability_data, aes(x = rank, y = fitted.values, color = outcome)) +
+  geom_point(alpha = 1, shape = 1, stroke = 2) +
+  xlab("Rank") +
+  ylab("Predicted Probability of Having Diabetes")
+
+# Our graph makes sense, which means our glm above (predicted object) accurately captures the relationship between variables.
+# Given a sample of the same variables, we can predict the likelihood of an individual having diabetes.
+
+#=============================================================================================================================================================================================================================
+# PCA's AND OTHER TYPES OF CORRELATION PLOTS???
+#=============================================================================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
