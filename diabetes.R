@@ -66,7 +66,28 @@ ggcorrplot(cor(diabetes_data), hc.order = TRUE)
 cor(diabetes_data)
 
 #=============================================================================================================================================================================================================================
-# 2. PREGNANCY, AGE, DIABETES PEDIGREE FUNCTION, AND INSULIN VS DIABETES
+# 2. BLOOD PRESURE AND SKIN THICKNESS VS DIABETES
+#=============================================================================================================================================================================================================================
+
+ggplot(diabetes_data, aes(x = Outcome, y = BloodPressure)) +
+  geom_boxplot()
+
+t.test(diabetes_data$BloodPressure ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+# based on the t.test there is not a statistically significant difference between the average blood pressure of someone that is diabetic vs not diabetic.
+# zero is also in the confidence interval meaning that there is a chance of no difference (zero indicates no difference). 
+
+ggplot(diabetes_data, aes(x = Outcome, y = SkinThickness)) +
+  geom_boxplot()
+
+t.test(diabetes_data$SkinThickness ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+# based on the t-test, there is not a statistically significant difference between the Skin Thickness of the tricep of a diabetic and non-diabetic
+# the confidence interval includes a zero meaning there is a chance of no difference between the average skin thickness
+
+# Both outcomes reflect the pearson's correlation/heat map as it claims that both blood pressure and skin thickness do not positively nor negatively relate to Outcome (diabetic vs not diabetic)
+
+
+#=============================================================================================================================================================================================================================
+# 3. PREGNANCY, AGE, DIABETES PEDIGREE FUNCTION, AND INSULIN VS DIABETES
 #=============================================================================================================================================================================================================================
 
 diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
@@ -95,16 +116,31 @@ ggplot(diabetes_data, aes(x = Outcome, y = Insulin)) +
 t.test(diabetes_data$Insulin ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 # All variables above show a statistically significant positive relationship with diabetic outcome.
+# Next, we will look at glucose levels and BMI and their relationship to diabetes. 
+# Based on the heat map, we will assume a strong positive correlation (small p-values/closer to zero)
+
+#=============================================================================================================================================================================================================================
+# 4. GLUCOSE LEVELS AND BMI VS DIABETES
+#=============================================================================================================================================================================================================================
+
+# Glucose and BMI have a strong positive correlation with Outcome.
+ggplot(diabetes_data, aes(x = Outcome, y = Glucose)) +
+  geom_boxplot()
+
+t.test(diabetes_data$Glucose ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+ggplot(diabetes_data, aes(x = Outcome, y = BMI)) +
+  geom_boxplot()
+
+t.test(diabetes_data$BMI ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
 
 
+# As expected, both outcomes show a strong positive correlation with Outcome. The p-values for both t.test showed 2.2e-16 which was the p-value closest to zero out of all t.tests ran.
+# we will hypothesize that on a linear regression model, that both glucose and BMI will be good predictors of diabetes and that both will have small p-values and the largest effect sizes of all variables.
 
-
-
-
-
-
-
-
+#=============================================================================================================================================================================================================================
+# 5. LINEAR REGRESSION MODEL - BINOMIAL
+#=============================================================================================================================================================================================================================
 
 
 
