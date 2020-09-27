@@ -307,21 +307,23 @@ bp_dp <- ggplot(diabetes_data, aes(x = BloodPressure, fill = Outcome)) +
 multiplot(preg_dp, gluc_dp, bmi_dp, dpf_dp, bp_dp, cols = 2)
 ```
 
-* As we can see, non-diabetic patients will have a tall peak where the majority of patients will fall into that bin depending on the variables
+* As we can see, non-diabetic patients will have a tall peak where the majority of patients will fall into that bin depending on the variables (each peak signifies a majority)
   
-  * For example: majority of non-diabetic patients will have 0-1 pregnancies as shown by the tall peak! But the majority of diabetic patients may have 1-8 pregnancies!
+  * Within our data set, majority of non-diabetic patients will have 0-1 pregnancies as shown by the tall red peak! But the majority of diabetic patients have 1-8 pregnancies!
  
-  * Majority of non-diabetic patients will have a glucose level of 100 as shown by the tall peak. But the majority of diabetic patients may have a glucose level of 125-175!
+  * Within our data set, majority of non-diabetic patients will have a glucose level of 100 as shown by the tall red peak. But the majority of diabetic patients have a glucose level of 125-175!
+  
+  * Within our data set, majority of non-diabetic patients will have a BMI of 21 as shown by the tall red peak. But the Majority of diabetic patients have a BMI score of 32-40!
 
-* We notice that the strong predictors (those with small p-values) have a slightly shifted density plot (they do not overlap completely) or have a much wider density as seen in Pregnancies.
+* We notice that the strong predictors (those with small p-values) have a slightly shifted density plot (they do not overlap completely) or have a much wider density.
 
-* Variables with statistically significant variability (< 5%), but are not as strong of predictors as the top 3) have overlapping density plots (with slight rightward shifts) and similar wideness in density (slightly wider)
+* Variables (such as Diabetes Pedigree Function and Blood Pressure) with statistically significant variability (< 5%), but are not as strong of predictors as the top 3 - Pregnancies, Glucosem and BMI) have overlapping density plots (with minimal rightward shifts) and similar wideness in density.
 
-* Although the diabetes pedigree function and blood pressure are slightly different, it is still statistically significant as shown by our linear regression model
+* Although the diabetes pedigree function and blood pressure are only slightly different, it is still statistically significant as shown by our linear regression model
 
 * Overlapping density plots give us a good understanding of the spread within our good predictors and how they vary between diabetic and non-diabetic patients.
 
-
+## Conclusion
 
 
 
