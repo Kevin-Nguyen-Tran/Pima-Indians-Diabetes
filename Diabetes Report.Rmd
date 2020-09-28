@@ -3,6 +3,7 @@ title: "Diabetes Report"
 author: "Kevin Tran"
 date: "9/27/2020"
 output: html_document
+bibliography: diabetes_bib.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -27,9 +28,24 @@ diabetes_data <- as.tibble(data)
 
 ## Abstract
 
-Noticed that first 6 variables had 0. Which doesn't seem realistic. 0 BP, 0 BMI, 0 insulin and etc.
+Diabetes is defined as a group of metabolic diseases that is categorized by chronic hyperglycemia. This can result from defects in insulin secretion, insulin action, or both. [@kharroubi2015diabetes] Throughout this analysis, we will analyze multiple variables and understand their prevalence in diabetes. We will first analyze each variable and their correlation to diabetes. From there, we will group each variable together that share similar correlations whether it is positive, negative, or neutral and analyze them further. Lastly, we will formulate a linear regression model to predict which variables are good predictors of having diabetes and which are not.
 
-Units:
+**The data analysis will be broken down by the following sections:**
+
+* Pearson's Correlation - Heatmap
+
+* Blood Pressure and Skin Thickness vs Diabetes
+
+* Pregnancies, Age, Diabetes Pedigree Function, and Insulin vs Diabetes
+
+* Glucose Levels and BMI vs Diabetes
+
+* Linear Regression Model - Binomial
+
+* Good Predictors of Diabetes - Analysis
+
+
+**Units:**
 
 * Pregnancies: number of times pregnant
 
@@ -325,7 +341,9 @@ multiplot(preg_dp, gluc_dp, bmi_dp, dpf_dp, bp_dp, cols = 2)
 
 ## Conclusion
 
+Uncontrolled diabetes can lead to stupor, coma or even death if not treated. [@kharroubi2015diabetes] Therefore, understanding the different variables and their correlation to diabetes is extremely important to early diagnosis/treatment. As shown in this analysis, there are great predictors of diabetes, good predictors of diabetes, and not good predictors of diabetes. Pregnancy, glucose levels, and BMI scores are all great predictors of diabetes as they had the smallest p-value. Diabetes pedigree function scores and blood pressure are good predictors of diabetes as they had slightly higher p-values yet were still statistically significant. When all of the good and great predictors are analyzed together, we can determine the likelihood of diabetes within a patient. Within our data set, majority of diabetic patients have 1-8 pregnancies, a glucose level of 125-175mg/dL, and a BMI score of 32-40. They also had a diabetes pedigree function score of .25-.75 and a blood pressure of 75-90mmHg. 
 
+## Bibliography
 
 
 
