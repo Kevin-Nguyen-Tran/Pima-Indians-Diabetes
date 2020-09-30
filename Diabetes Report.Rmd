@@ -66,11 +66,9 @@ Diabetes is defined as a group of metabolic diseases that is categorized by chro
 * Outcome: 0 if no diabetes and 1 if diabetic
 
 ```{r}
-# NEED TO TIDY DATA SET:
 summary(diabetes_data)
 str(diabetes_data)
 
-#it just seems that Outcome needs to be changed to a factor. All other variables are in correct class. **** IF YOU DO THIS, YOU CAN'T USE PEARSON'S CORRELATION, SINCE IT IS NOT NUMBERIC!
 
 diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
 ```
@@ -148,7 +146,9 @@ t.test(diabetes_data$SkinThickness ~ diabetes_data$Outcome, mu = 0, alt = "two.s
 
 ## Pregnancy, Age, Diabetes Pedigree Function, and Insulin vs Diabetes
 
-As shown in our heat map, Pregnancy, Age, Diabetes Pedigree Function, and Insulin all showed a slight positive correlation to diabetes outcome. Let's analyze each separately and run a t.test to show statistical significance of each variable. 
+As shown in our heat map, Pregnancy, Age, Diabetes Pedigree Function, and Insulin all showed a slight positive correlation to diabetes outcome. 
+
+**Let's analyze each separately and run a t.test to show statistical significance of each variable.** 
 
 ```{r}
 diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
@@ -276,6 +276,7 @@ summary(predicted)
 * Lastly, Age, Insulin, and Skin Thickness all show large p-values (greater than 5%) which shows they are not good predictors of diabetes.
 
 Certain variables, such as Pregnancy, Blood Pressure, Age, and Insulin have shifted in significance in comparison to their Pearson correlation value. This can be explained as the linear regression model does not quantify the significance of the variables separately but rather together in reference to diabetic outcome.
+
 * The heat map/Pearson's correlation, quantify the relationship independently.
 
 **Now we will plot the graph of our generalized linear model to see if it effectively captures the relationship. If so, closer to zero should represent no diabetes and closer to one should represent diabetes:**
@@ -303,7 +304,7 @@ ggplot(probability_data, aes(x = rank, y = fitted.values, color = outcome)) +
 
 ## Good Predictors of Diabetes
 
-Now that we know Pregnancy, Glucose, BMI, Diabetes Pedigree Function, and Blood Pressure are all good predictors of Diabetes, we can dive deeper and examine each individually:
+**Now that we know Pregnancy, Glucose, BMI, Diabetes Pedigree Function, and Blood Pressure are all good predictors of Diabetes, we can dive deeper and examine each individually:**
 ```{r}
 preg_dp <- ggplot(diabetes_data, aes(x = Pregnancies, fill = Outcome)) +
   geom_density(size = 1, alpha = .5)
@@ -325,15 +326,25 @@ multiplot(preg_dp, gluc_dp, bmi_dp, dpf_dp, bp_dp, cols = 2)
 
 * As we can see, non-diabetic patients will have a tall peak where the majority of patients will fall into that bin depending on the variables (each peak signifies a majority)
   
+*As mentioned by [@corrado2003gestational], it has been suggested that in multiple pregnancies that the incidence of gestational diabetes may be increased in addition to decreased insulin sensitivity that is modified by several factors (some of which have been explored within this analysis).*
+  
   * Within our data set, majority of non-diabetic patients will have 0-1 pregnancies as shown by the tall red peak! But the majority of diabetic patients have 1-8 pregnancies!
+
+*According to [@mellitus2005diagnosis], there are criteria for the diagnosis of diabetes in regards to plasma glucose level. The criteria as stated in this article shows: In a patient with classic symptoms of hyperglycemia or hyperglycemia crisis, a random plasma glucose greater than or equal to 200mg/dL or a Fasted Plasma Glucose of greater than or equal to 126 mg/dL* 
  
   * Within our data set, majority of non-diabetic patients will have a glucose level of 100 as shown by the tall red peak. But the majority of diabetic patients have a glucose level of 125-175!
+ 
+*Normal BMI is an individual who is between 18.5 and 25. HOwever, as the BMI increases, so does the risk of developing type 2 diabetes. Within a BMI score of 30 to 39.99 there is a 20.1% greater risk and with a BMI score greater than 40 there is a 38.8% greater risk. [@gray2015relationship]*
   
   * Within our data set, majority of non-diabetic patients will have a BMI of 21 as shown by the tall red peak. But the Majority of diabetic patients have a BMI score of 32-40!
 
 * We notice that the strong predictors (those with small p-values) have a slightly shifted density plot (they do not overlap completely) or have a much wider density.
 
-* Variables (such as Diabetes Pedigree Function and Blood Pressure) with statistically significant variability (< 5%), but are not as strong of predictors as the top 3 - Pregnancies, Glucosem and BMI) have overlapping density plots (with minimal rightward shifts) and similar wideness in density.
+* Variables (such as Diabetes Pedigree Function and Blood Pressure) with statistically significant variability (< 5%), but are not as strong of predictors as the top 3 - Pregnancies, Glucose, and BMI) have overlapping density plots (with minimal rightward shifts) and similar wideness in density.
+
+*Unfortunately, Diabetes Pedigree Function scores seem to be specific to this particular data set, therefore, normal ranges have not been documented. However, the larger the number the higher the likelihood of diabetes onset formulated by family medical history*
+
+*In regards to hypertension and diabetes, Diastolic Blood pressure of 90-99 mmHg should be treated in diabetic patients.* [@volpe2015understanding]
 
 * Although the diabetes pedigree function and blood pressure are only slightly different, it is still statistically significant as shown by our linear regression model
 
@@ -341,7 +352,7 @@ multiplot(preg_dp, gluc_dp, bmi_dp, dpf_dp, bp_dp, cols = 2)
 
 ## Conclusion
 
-Uncontrolled diabetes can lead to stupor, coma or even death if not treated. [@kharroubi2015diabetes] Therefore, understanding the different variables and their correlation to diabetes is extremely important to early diagnosis/treatment. As shown in this analysis, there are great predictors of diabetes, good predictors of diabetes, and not good predictors of diabetes. Pregnancy, glucose levels, and BMI scores are all great predictors of diabetes as they had the smallest p-value. Diabetes pedigree function scores and blood pressure are good predictors of diabetes as they had slightly higher p-values yet were still statistically significant. When all of the good and great predictors are analyzed together, we can determine the likelihood of diabetes within a patient. Within our data set, majority of diabetic patients have 1-8 pregnancies, a glucose level of 125-175mg/dL, and a BMI score of 32-40. They also had a diabetes pedigree function score of .25-.75 and a blood pressure of 75-90mmHg. 
+Uncontrolled diabetes can lead to stupor, coma or even death if not treated. [@kharroubi2015diabetes] Therefore, understanding the different variables and their correlation to diabetes is extremely important to early diagnosis/treatment. As shown in this analysis, there are great predictors of diabetes, good predictors of diabetes, and not good predictors of diabetes. Pregnancy, glucose levels, and BMI scores are all great predictors of diabetes as they had the smallest p-value. Diabetes pedigree function scores and blood pressure are good predictors of diabetes as they had slightly higher p-values yet were still statistically significant. When all of the good and great predictors are analyzed together, we can determine the likelihood of diabetes within a patient. Within our data set, majority of diabetic patients have 1-8 pregnancies, a glucose level of 125-175mg/dL, and a BMI score of 32-40. They also had a diabetes pedigree function score of .25-.75 and a blood pressure of 75-90mmHg. Knowing these values and how they compare to "normal" ranges will allow for us to make a confident prediction for diagnosis. 
 
 ## Bibliography
 
