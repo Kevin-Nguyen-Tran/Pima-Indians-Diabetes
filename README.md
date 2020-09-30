@@ -1,1 +1,356 @@
 # Pima-Indians-Diabetes
+
+
+```{r setup, include=FALSE}
+# PREREQS:
+rm(list = ls()) #removes all variables stored previously in Environment (good habit to include)
+
+library(Rmisc) # transform integers to factors, must be first or will mask other packages. We only need multiplot!
+library(lubridate) #to modify date-time entries, if you do not have it: install.packages("lubridate")
+library(scales) #allows to modify scientific notation for values
+library(dplyr)
+library(wesanderson)
+library(tidyverse) #Run tidyverse, if you do not have: install.packages("tidyverse")
+library(ggcorrplot) # pearon's correlation and heatmaps
+
+# URL: https://www.kaggle.com/uciml/pima-indians-diabetes-database
+
+#READ DATA SET AND STORE INTO OBJECT:
+data <- read.csv("C:/Users/Kevin/Desktop/Pima-Indians-Diabetes #6/diabetes.csv")
+
+diabetes_data <- as.tibble(data)
+```
+
+## Abstract
+
+Diabetes is defined as a group of metabolic diseases that is categorized by chronic hyperglycemia. This can result from defects in insulin secretion, insulin action, or both. [@kharroubi2015diabetes] Throughout this analysis, we will analyze multiple variables and understand their prevalence in diabetes. We will first analyze each variable and its correlation to diabetes. From there, we will group each variable together that share similar correlations whether it is positive, negative, or neutral and analyze them further. Lastly, we will formulate a linear regression model to predict which variables are good predictors of having diabetes and which are not.
+
+**The data analysis will be broken down by the following sections:**
+
+* Pearson's Correlation - Heatmap
+
+* Blood Pressure and Skin Thickness vs Diabetes
+
+* Pregnancies, Age, Diabetes Pedigree Function, and Insulin vs Diabetes
+
+* Glucose Levels and BMI vs Diabetes
+
+* Linear Regression Model - Binomial
+
+* Good Predictors of Diabetes - Analysis
+
+
+**Units:**
+
+* Pregnancies: number of times pregnant
+
+* Glucose: in mg/dL 
+
+* Blood pressure: in mm Hg - based on the numbers, it seems that our values are of DBP (diastolic blood pressure)
+
+* Skinthickness: triceps skin fold in mm
+
+* Insulin: mu U/ml
+
+* BMI in kg/m^2^
+
+* DiabetesPedigree: likelihood of having diabetes based on familial history
+
+* Age: in years
+
+* Outcome: 0 if no diabetes and 1 if diabetic
+
+```{r}
+summary(diabetes_data)
+str(diabetes_data)
+
+
+diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
+```
+
+## Pearson's Correlation - Heat Map
+
+```{r}
+ggcorrplot(cor(data), hc.order = TRUE, lab = TRUE, lab_size = 3) +
+  labs(title = "Correlation Between Variables and outcome",
+       subtitle = "Netural and Positive Correlation",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+```
+
+* Based on this correlation plot, we are more interested in how outcome fares with the other numeric variables.
+
+* Blood pressure and skin thickness do not appear to show either a positive or negative correlation with Outcome.
+
+* Pregnancy, age, diabetes pedigree function, and insulin have a slightly positive correlation with outcome.
+
+* Glucose and BMI have a strong positive correlation with Outcome.
+
+This will be our overhead analysis and we will now dive deeper into each section. We will see if there is a statistically significant correlation between each variable and the Diabetic outcome and if the results of the heat map correspond to the linear regression model formulated at the end of our analysis.
+
+## Blood Pressure and Skin Thickness vs Diabetes
+
+We want to see if Blood Pressure and Skin Thickness are good indicators of Diabetes. According to our heat map in the previous section, both Blood Pressure and Skin Thickness did not show a positive or negative correlation to diabetes. 
+
+* Due to that we will hypothesize no statistical significance in the average blood pressure and skin thickness between diabetic and non-diabetic patients.
+
+```{r}
+ggplot(diabetes_data, aes(x = Outcome, y = BloodPressure)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest2", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Blood Pressure",
+       title = "No Statistically Significant Difference",
+       subtitle = "Between the Avg BP of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+
+t.test(diabetes_data$BloodPressure ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+```
+* Based on the t.test there is not a statistically significant difference between the average blood pressure of someone that is diabetic vs not diabetic.
+
+* Zero is also in the confidence interval, therefore, we fail to reject our null hypothesis that there is no significant difference between the average blood pressures.
+
+**Next, we will analyze skin thickness in the same manner:**
+
+```{r}
+ggplot(diabetes_data, aes(x = Outcome, y = SkinThickness)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest2", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Tricep Skin Thickness",
+       title = "No Statistically Significant Difference",
+       subtitle = "Between the Avg Skin Thickness of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+
+t.test(diabetes_data$SkinThickness ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+```
+
+* Based on the t-test, there is not a statistically significant difference between the Skin Thickness of the triceps of a diabetic and non-diabetic patient
+
+* The results similarly reflects that of blood pressure.
+  * Both outcomes reflect the Pearson's correlation/heat map as it claims that both blood pressure and skin thickness do not positively nor negatively relate to Outcome (diabetic vs not diabetic)
+
+## Pregnancy, Age, Diabetes Pedigree Function, and Insulin vs Diabetes
+
+As shown in our heat map, Pregnancy, Age, Diabetes Pedigree Function, and Insulin all showed a slight positive correlation to diabetes outcome. 
+
+**Let's analyze each separately and run a t.test to show statistical significance of each variable.** 
+
+```{r}
+diabetes_data$Outcome <- as.factor(diabetes_data$Outcome)
+
+ggplot(diabetes_data, aes(x = Outcome, y = Pregnancies)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Number of Pregnancies",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg # of Pregnancies of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+# Showing a positive relation: diabetic patients have more pregnancies on average than non-diabetic patients
+t.test(diabetes_data$Pregnancies ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+
+ggplot(diabetes_data, aes(x = Outcome, y = Age)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Age",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg Age of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+# Showing a positive relation: diabetic patients are older on average than non-diabetic patients
+t.test(diabetes_data$Age ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+
+ggplot(diabetes_data, aes(x = Outcome, y = DiabetesPedigreeFunction)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Diabetes Pedigree Function Score",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg Diabetes Pedigree Frunction Score of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+# Showing a positive relation: diabetic patients have a higher diabetes pedigree function score on average than non-diabetic patients
+t.test(diabetes_data$DiabetesPedigreeFunction ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+
+ggplot(diabetes_data, aes(x = Outcome, y = Insulin)) +
+  geom_boxplot(fill = wes_palette("GrandBudapest1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Insulin (mu U/ml)",
+       title = "Slight Statistically Significant Difference",
+       subtitle = "Between the Avg Insulin Level of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+# Showing a positive relation: diabetic patients have on average higher Insulin levels than non-diabetic
+t.test(diabetes_data$Insulin ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+```
+
+* All variables above show a statistically significant positive relationship with diabetic outcome.
+
+* Also, none of the confidence intervals included zero. Therefore, we can reject our null hypothesis.
+  * Null Hypothesis: there is no significant difference between the average values of a diabetic and non-diabetic patient.
+
+## Glucose Levels and BMI vs Diabetes
+
+* Next, we will look at glucose levels and BMI and their relationship to diabetes. 
+  * Based on the heat map, we will assume a strong positive correlation (small p-values/closer to zero)
+
+```{r}
+ggplot(diabetes_data, aes(x = Outcome, y = Glucose)) +
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "Glucose (mg/dL)",
+       title = "Strong Statistically Significant Difference",
+       subtitle = "Between the Avg Glucose Level of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+
+t.test(diabetes_data$Glucose ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+
+ggplot(diabetes_data, aes(x = Outcome, y = BMI)) +
+  geom_boxplot(fill = wes_palette("Darjeeling1", n = 2)) +
+  theme_dark() +
+  labs(x = "Diabetic", 
+       y = "BMI (kg/m^2^)",
+       title = "Strong Statistically Significant Difference",
+       subtitle = "Between the Avg BMI of Diabetic and Non-Diabetic",
+       caption = "Source: https://archive.ics.uci.edu") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  scale_x_discrete(limits = c("0", "1"),
+                   labels = c("No", "Yes"))
+
+t.test(diabetes_data$BMI ~ diabetes_data$Outcome, mu = 0, alt = "two.sided", conf = 0.95, var.eq = FALSE, paired = FALSE)
+```
+
+* As expected, both outcomes show a strong positive correlation with Outcome. 
+  * The p-values for both t.test showed 2.2e-16 which was the p-value closest to zero out of all t.tests ran within this analysis.
+
+* We will hypothesize that on a linear regression model, that both glucose and BMI will be good predictors of diabetes and that both will have small p-values and the largest effect sizes of all variables.
+
+## Linear Regression Model - Binomial
+
+```{r}
+predicted <- glm(Outcome ~ ., family = "binomial", data = diabetes_data)
+summary(predicted)
+```
+
+* As shown in the summary: Pregnancy, Glucose, and BMI have the smallest p-value of all variables (as indicated by the three stars), indicating the strongest statistical significance.
+
+* Next, Diabetes Pedigree function and Blood pressure show statistical significant but with slightly higher p-values.
+
+* Lastly, Age, Insulin, and Skin Thickness all show large p-values (greater than 5%) which shows they are not good predictors of diabetes.
+
+Certain variables, such as Pregnancy, Blood Pressure, Age, and Insulin have shifted in significance in comparison to their Pearson correlation value. This can be explained as the linear regression model does not quantify the significance of the variables separately but rather together in reference to diabetic outcome.
+
+* The heat map/Pearson's correlation, quantify the relationship independently.
+
+**Now we will plot the graph of our generalized linear model to see if it effectively captures the relationship. If so, closer to zero should represent no diabetes and closer to one should represent diabetes:**
+
+```{r}
+probability_data <- data.frame(fitted.values = predicted$fitted.values, outcome = diabetes_data$Outcome)
+
+probability_data <- probability_data %>%
+  arrange(fitted.values)
+
+
+probability_data <- probability_data %>%
+  mutate(rank = 1:nrow(probability_data))
+
+ggplot(probability_data, aes(x = rank, y = fitted.values, color = outcome)) +
+  geom_point(alpha = 1, shape = 1, stroke = 2) +
+  xlab("Rank") +
+  ylab("Predicted Probability of Having Diabetes")
+
+```
+
+* Our graph makes sense, which means our generalized linear model above (predicted object) accurately captures the relationship between variables.
+
+* Given a sample of the same variables, we can predict the likelihood of an individual having diabetes.
+
+## Good Predictors of Diabetes
+
+**Now that we know Pregnancy, Glucose, BMI, Diabetes Pedigree Function, and Blood Pressure are all good predictors of Diabetes, we can dive deeper and examine each individually:**
+```{r}
+preg_dp <- ggplot(diabetes_data, aes(x = Pregnancies, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
+
+gluc_dp <- ggplot(diabetes_data, aes(x = Glucose, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
+
+bmi_dp <- ggplot(diabetes_data, aes(x = BMI, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
+
+dpf_dp <- ggplot(diabetes_data, aes(x = DiabetesPedigreeFunction, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
+
+bp_dp <- ggplot(diabetes_data, aes(x = BloodPressure, fill = Outcome)) +
+  geom_density(size = 1, alpha = .5)
+
+multiplot(preg_dp, gluc_dp, bmi_dp, dpf_dp, bp_dp, cols = 2)
+```
+
+* As we can see, both non-diabetic (red) and diabetic (blue) are represented by density plots. Each peak represents the majority, and depending on where the peak falls within the x-axis will represent the average of the population. 
+  * We will dive into the averages of both diabetic and non-diabetic patients for each predictor.
+  
+*As mentioned by [@corrado2003gestational], it has been suggested that in multiple pregnancies that the incidence of gestational diabetes may be increased in addition to decreased insulin sensitivity that is modified by several factors (some of which have been explored within this analysis).*
+  
+  * Within our data set, the majority of non-diabetic patients will have 0-1 pregnancies as shown by the tall red peak! But the majority of diabetic patients have 1-8 pregnancies!
+
+*According to [@mellitus2005diagnosis], there are criteria for the diagnosis of diabetes in regards to plasma glucose level. The criteria as stated in this article shows: In a patient with classic symptoms of hyperglycemia or hyperglycemia crisis, random plasma glucose greater than or equal to 200 mg/dL or a Fasted Plasma Glucose of greater than or equal to 126 mg/dL* 
+ 
+  * Within our data set, the majority of non-diabetic patients will have a glucose level of 100 mg/dL as shown by the tall red peak. But the majority of diabetic patients have a glucose level of 125-175 mg/dL!
+ 
+*Normal BMI is an individual who is between 18.5 and 25. However, as BMI increases, so does the risk of developing type 2 diabetes. Within a BMI score of 30 to 39.99 there is a 20.1% greater risk and with a BMI score greater than 40 there is a 38.8% greater risk. [@gray2015relationship]*
+  
+  * Within our data set, the majority of non-diabetic patients will have a BMI of 21 as shown by the tall red peak. But the Majority of diabetic patients have a BMI score of 32-40!
+
+*Unfortunately, Diabetes Pedigree Function scores seem to be specific to this particular data set, therefore, normal ranges have not been documented. However, the larger the number the higher the likelihood of diabetes onset formulated by family medical history*
+
+*In regards to hypertension and diabetes, Diastolic Blood pressure of 90-99 mmHg should be treated in diabetic patients.* [@volpe2015understanding]
+
+We notice that the strong predictors (those with small p-values) have a slightly shifted density plot (they do not overlap completely) and/or have a much wider density.
+
+* Variables (such as Diabetes Pedigree Function and Blood Pressure) with statistically significant variability (< 5%), but are not as strong of predictors as the top 3 - Pregnancies, Glucose, and BMI have overlapping density plots (with minimal rightward shifts) and similar wideness in density.
+
+* Although the diabetes pedigree function and blood pressure are only slightly different, it is still statistically significant as shown by our linear regression model
+
+* Overlapping density plots give us a good understanding of the spread within our good predictors and how they vary between diabetic and non-diabetic patients.
+
+## Conclusion
+
+Uncontrolled diabetes can lead to stupor, coma, or even death if not treated. [@kharroubi2015diabetes] Therefore, understanding the different variables and their correlation to diabetes is extremely important to early diagnosis/treatment. As shown in this analysis, there are great predictors of diabetes, good predictors of diabetes, and not good predictors of diabetes. Pregnancy, glucose levels, and BMI scores are all great predictors of diabetes as they had the smallest p-value. Diabetes pedigree function scores and blood pressure are good predictors of diabetes as they had slightly higher p-values yet were still statistically significant. When all of the good and great predictors are analyzed together, we can determine the likelihood of diabetes within a patient. Within our data set, the majority of diabetic patients have 1-8 pregnancies, a glucose level of 125-175mg/dL, and a BMI score of 32-40. They also had a diabetes pedigree function score of .25-.75 and a blood pressure of 75-90mmHg. Knowing these values and how they compare to "normal" ranges will allow us to make a confident prediction for diagnosis. 
+
+## Bibliography
